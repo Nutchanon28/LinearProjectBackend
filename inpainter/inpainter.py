@@ -218,17 +218,21 @@ class Inpainter():
         best_match_difference = 0
 
         lab_image = rgb2lab(self.working_image)
-        cv2.imwrite("./lab_image.jpg", self.working_image * 255)
+        cv2.imwrite("./lab_image.jpg", self.working_image)
 
         for y in range(height - patch_height + 1):
             for x in range(width - patch_width + 1):
+                """
+                ดูทุก patch มุมขวาอยู่ตำแหน่ง (y, x)
+                เพื่อหา patch ที่เหมาะที่สุดสำหรับนำไปใช้แทน target_patch
+                """
                 source_patch = [
                     [y, y + patch_height-1],
                     [x, x + patch_width-1]
                 ]
                 if self._patch_data(self.working_mask, source_patch) \
                    .sum() != 0:
-                    continue
+                    continue #ถ้า mask บริเวณนั้นมีส่วนที่เป็นสีขาว -> continue
 
                 difference = self._calc_patch_difference(
                     lab_image,
@@ -243,7 +247,7 @@ class Inpainter():
 
     def _update_image(self, target_pixel, source_patch):
         """
-        
+        source_patch คือ patch ที่คล้ายกับ target_patch ที่สุด
         """
         target_patch = self._get_patch(target_pixel)
         pixels_positions = np.argwhere(
@@ -251,23 +255,26 @@ class Inpainter():
                 self.working_mask,
                 target_patch
             ) == 1
-        ) + [target_patch[0][0], target_patch[1][0]]
+        ) + [target_patch[0][0], target_patch[1][0]] #pixels_positions คือตำแหน่งที่เป็นสีขาวของ mask ที่อยู่ใน target_patch
         patch_confidence = self.confidence[target_pixel[0], target_pixel[1]]
         for point in pixels_positions:
-            self.confidence[point[0], point[1]] = patch_confidence
+            self.confidence[point[0], point[1]] = patch_confidence #เปลี่ยนค่า confidence ของ pixel_positions เป็นค่าconfidence ที่ตำแหน่ง target_pixel
+
 
         mask = self._patch_data(self.working_mask, target_patch)
-        rgb_mask = self._to_rgb(mask)
+        rgb_mask = self._to_rgb(mask) #ทำให้เป็น 3 tensors
         source_data = self._patch_data(self.working_image, source_patch)
         target_data = self._patch_data(self.working_image, target_patch)
 
-        new_data = source_data*rgb_mask + target_data*(1-rgb_mask)
+        new_data = source_data*rgb_mask + target_data*(1-rgb_mask) # calculate new data
 
+        #update image
         self._copy_to_patch(
             self.working_image,
             target_patch,
             new_data
         )
+        #remove จุดสีขาว ใน mask ที่บริเวณ target_patch
         self._copy_to_patch(
             self.working_mask,
             target_patch,
@@ -290,8 +297,12 @@ class Inpainter():
         return patch
 
     def _calc_patch_difference(self, image, target_patch, source_patch):
+        """
+            ดูทุก patch ใน original image กับ target_patch
+            หา square distance กับ euclidean distance ระหว่างทั้งสอง patch
+        """
         mask = 1 - self._patch_data(self.working_mask, target_patch)
-        rgb_mask = self._to_rgb(mask)
+        rgb_mask = self._to_rgb(mask) #ทำให้ mask มี 3 tensor -> r,g,b
         target_data = self._patch_data(
             image,
             target_patch
@@ -308,6 +319,9 @@ class Inpainter():
         return squared_distance + euclidean_distance
 
     def _finished(self):
+        """
+        finish เมื่อไม่มีจุดขาวใน mask แล้ว
+        """
         height, width = self.working_image.shape[:2]
         remaining = self.working_mask.sum()
         total = height * width
@@ -331,6 +345,7 @@ class Inpainter():
 
     @staticmethod
     def _copy_to_patch(dest, dest_patch, data):
+        #copy ให้ dest บริเวณ dest_patch มีค่าเท่ากับ data
         dest[
             dest_patch[0][0]:dest_patch[0][1]+1,
             dest_patch[1][0]:dest_patch[1][1]+1
