@@ -32,19 +32,19 @@ class Inpainter():
         start_time = time.time()
         keep_going = True
         while keep_going:
-            self._find_front()
+            self._find_front() #หาจุดที่เป็น edge ของ mask
             if self.plot_progress:
                 self._plot_image()
 
-            self._update_priority()
+            self._update_priority() #ขั้นตอนนี้ยังงงๆอยู่ว่าแต่ละตัวมันแทนอะไร
 
-            target_pixel = self._find_highest_priority_pixel()
+            target_pixel = self._find_highest_priority_pixel() #เลือกจุดที่มี priority สูงสุด เพื่อทำการแทนที่จุดนั้น
             find_start_time = time.time()
-            source_patch = self._find_source_patch(target_pixel)
+            source_patch = self._find_source_patch(target_pixel) #เลือกจุดที่เหมาะสมที่สุดในการแทนที่
             print('Time to find best: %f seconds'
                   % (time.time()-find_start_time))
 
-            self._update_image(target_pixel, source_patch)
+            self._update_image(target_pixel, source_patch) #แทยที่จุดนั้น
 
             keep_going = not self._finished()
 
@@ -52,6 +52,7 @@ class Inpainter():
         return self.working_image
 
     def _validate_inputs(self):
+        print(f"image.shape = {self.image.shape[:2]} mask.shape = {self.mask.shape}")
         if self.image.shape[:2] != self.mask.shape:
             raise AttributeError('mask and image must be of the same size')
 
@@ -119,6 +120,8 @@ class Inpainter():
         self._update_confidence()
         self._update_data()
         self.priority = self.confidence * self.data * self.front
+        #print(f"anto {self.confidence.shape} * {self.data.shape} * {self.front.shape}")
+        cv2.imwrite("./priority_updating.jpg", self.priority * 10000)
 
     def _update_confidence(self):
         """"
@@ -138,9 +141,13 @@ class Inpainter():
             patch = self._get_patch(point) #[[top, bottom], [left, right]]
             new_confidence[point[0], point[1]] = sum(sum(
                 self._patch_data(self.confidence, patch)
-            ))/self._patch_area(patch) #จำนวนของจุดที่ไม่ใช่ target ใน patch ที่ center = (point[0], point[1]) / patch size
+            ))/self._patch_area(patch) #(จำนวนของจุดที่ไม่ใช่ target mask ใน patch ที่ center = (point[0], point[1])) / patch size
 
-        self.confidence = new_confidence
+        self.confidence = new_confidence 
+        """
+        ตำแหน่งที่มี confidence มาก คือ ตำแหน่งที่มีจุดที่ไม่ได้อยู่ใน mask มาก 
+        น่าจะหมายถึงตำแหน่งที่มีจุดที่หายไปน้อยที่สุด -> มีความมั่นใจในการแทนที่ตำแหน่งนี้มากกว่าตำแหน่งที่หายไปเยอะๆ
+        """
         cv2.imwrite("./confidence.jpg", self.confidence * 255)
 
     def _update_data(self):
@@ -152,9 +159,14 @@ class Inpainter():
             normal_gradient[:, :, 0]**2 + normal_gradient[:, :, 1]**2
         ) + 0.001  # To be sure to have a greater than 0 data
 
+        cv2.imwrite("./data_updating.jpg", self.data * 1000)
+
     def _calc_normal_matrix(self):
         """
         เอา working_mask ไปทำ convolution กับ x_kernel กับ y_kernel 
+
+        kernel ดูคล้ายๆของ  sobel
+
         """
         x_kernel = np.array([[.25, 0, -.25], [.5, 0, -.5], [.25, 0, -.25]])
         y_kernel = np.array([[-.25, -.5, -.25], [0, 0, 0], [.25, .5, .25]])
@@ -210,20 +222,20 @@ class Inpainter():
         """
         
         """
-        target_patch = self._get_patch(target_pixel)
+        target_patch = self._get_patch(target_pixel) #บริเวณที่ต้องการแทนที่
         height, width = self.working_image.shape[:2]
         patch_height, patch_width = self._patch_shape(target_patch)
 
         best_match = None
         best_match_difference = 0
 
-        lab_image = rgb2lab(self.working_image)
+        lab_image = rgb2lab(self.working_image) #convert to lab image ทำไม...
         cv2.imwrite("./lab_image.jpg", self.working_image)
 
         for y in range(height - patch_height + 1):
             for x in range(width - patch_width + 1):
                 """
-                ดูทุก patch มุมขวาอยู่ตำแหน่ง (y, x)
+                ดูทุก patch ที่มุมซ้ายบนอยู่ตำแหน่ง (y, x)
                 เพื่อหา patch ที่เหมาะที่สุดสำหรับนำไปใช้แทน target_patch
                 """
                 source_patch = [
@@ -232,7 +244,7 @@ class Inpainter():
                 ]
                 if self._patch_data(self.working_mask, source_patch) \
                    .sum() != 0:
-                    continue #ถ้า mask บริเวณนั้นมีส่วนที่เป็นสีขาว -> continue
+                    continue #ถ้า mask บริเวณนั้นมีส่วนที่เป็นสีขาว -> เป็นบริเวณที่มีจุดที่ยังไม่ได้แทนที่อยู่ -> continue
 
                 difference = self._calc_patch_difference(
                     lab_image,

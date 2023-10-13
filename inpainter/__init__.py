@@ -15,4 +15,5 @@ python inpainter ./image1.jpg ./mask1.jpg
 
 python inpainter ./resources/image6.jpg ./resources/mask6.jpg
 
+python inpainter ./resources/image5.jpg ./resources/mask5.jpg
 """
