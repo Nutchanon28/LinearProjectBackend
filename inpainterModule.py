@@ -52,6 +52,7 @@ class Inpainter():
         return self.working_image
 
     def _validate_inputs(self):
+        print("I received and validating")
         print(f"image.shape = {self.image.shape[:2]} mask.shape = {self.mask.shape}")
         if self.image.shape[:2] != self.mask.shape:
             raise AttributeError('mask and image must be of the same size')

@@ -30,9 +30,8 @@ class FileUpload(BaseModel):
     files: List[bytes]  # Use bytes for file data
     
 def inpainter():
-
     image = imread("resources/image.jpg")
-    mask = imread("resources/mask.jpg", as_gray=True)
+    mask = imread("resources/mask5.jpg", as_gray=True)
 
     output_image = Inpainter(
         image,
@@ -53,7 +52,7 @@ async def create_upload_file(mode: Annotated[str, Form()], image : UploadFile = 
         inpainter()
         print("received!")
     elif mode == "canny":
-        # show_image()
+        inpainter()
         print("received!")
 
     return {"filename": image.filename}
@@ -67,15 +66,21 @@ def serve():
     return """
     <html>
         <head>
-            <title>Helppppppp!</title>
+            <title>Process Result</title>
         </head>
         <body>
-        <h1>Here's your image</h1>
-        <img src="resources/image.jpg">
+            <div>
+                <h1>Here's your image</h1>
+            </div>
+            <img src="resources/imageEdit.jpg">
         </body>
+        
         <style>
         h1{
             color:#FF3333
+        }
+        div{
+            backgroundColor:#000055
         }
         </style>
     </html>
