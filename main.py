@@ -9,10 +9,13 @@ from fastapi.staticfiles import StaticFiles
 import numpy as np
 import cv2
 from process import show_image, show_monotone_image
+from canny import cannyMask
+from edge_detection import laplacianMask
 
 import argparse
 from skimage.io import imread, imsave
 from inpainterModule import Inpainter
+# uvicorn main:app --reload
 
 app = FastAPI()
 
@@ -31,7 +34,7 @@ class FileUpload(BaseModel):
     
 def inpainter():
     image = imread("resources/image.jpg")
-    mask = imread("resources/mask5.jpg", as_gray=True)
+    mask = imread("resources/mask.jpg", as_gray=True)
 
     output_image = Inpainter(
         image,
@@ -49,11 +52,11 @@ async def create_upload_file(mode: Annotated[str, Form()], image : UploadFile = 
         content = await image.read()  # async read
         await out_file.write(content)  # async write
     if mode == "laprician":
+        laplacianMask()
         inpainter()
-        print("received!")
     elif mode == "canny":
+        cannyMask()
         inpainter()
-        print("received!")
 
     return {"filename": image.filename}
 
