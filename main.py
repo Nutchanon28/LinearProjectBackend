@@ -24,14 +24,14 @@ app.add_middleware(
 def show_image():
     # Set up data to send to mouse handler
     data = {}
-    img = cv2.imread("image.png", 1)
+    img = cv2.imread("testing.png", 1)
     print("read success!!")
 
     cv2.imshow("Image", img)
     cv2.waitKey(0)
 
     # Convert array to np.array in shape n,2,2
-    points = np.uint16(data['lines'])
+    # points = np.uint16(data['lines'])
 
     return "Hello from the hell"
 
@@ -41,7 +41,7 @@ class FileUpload(BaseModel):
 @app.post("/")
 # async def create_upload_file(datas: dict) -> dict:
 async def create_upload_file(mode: Annotated[str, Form()], image : UploadFile = File(...)) -> dict:
-    async with aiofiles.open("./image.png", 'wb') as out_file:
+    async with aiofiles.open("./testing", 'wb') as out_file:
         content = await image.read()  # async read
         await out_file.write(content)  # async write
     show_image()
