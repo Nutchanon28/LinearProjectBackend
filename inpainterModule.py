@@ -97,7 +97,7 @@ class Inpainter():
         self.working_image = np.copy(self.image)
         self.working_mask = np.copy(self.mask)
 
-        #cv2.imwrite("./front_updating.jpg", self.front)
+        #cv2.imwrite("./fillProcess/front_updating.jpg", self.front)
         """cv2.imwrite("./mask.jpg", self.working_mask * 255)
         cv2.imwrite("./image.jpg", self.working_image * 255)
         cv2.imwrite("./confidence.jpg", self.confidence * 255)"""
@@ -111,10 +111,10 @@ class Inpainter():
         filter the negative values.
         """
         self.front = (laplace(self.working_mask) > 0).astype('uint8') #จะได้ binary image ที่ขอบของ mask เป็นสีขาว 
-        cv2.imwrite("./front_updating.jpg", self.front * 255)
-        cv2.imwrite("./mask_updating.jpg", self.working_mask * 255)
-        cv2.imwrite("./image_updating.jpg", self.working_image)
-        #cv2.imwrite("./image_updating4.jpg", self.image)
+        cv2.imwrite("./fillProcess/front_updating.jpg", self.front * 255)
+        cv2.imwrite("./fillProcess/mask_updating.jpg", self.working_mask * 255)
+        cv2.imwrite("./fillProcess/image_updating.jpg", self.working_image)
+        #cv2.imwrite("./fillProcess/image_updating4.jpg", self.image)
         # TODO: check if scipy's laplace filter is faster than scikit's
 
     def _update_priority(self):
@@ -122,7 +122,7 @@ class Inpainter():
         self._update_data()
         self.priority = self.confidence * self.data * self.front
         #print(f"anto {self.confidence.shape} * {self.data.shape} * {self.front.shape}")
-        cv2.imwrite("./priority_updating.jpg", self.priority * 10000)
+        cv2.imwrite("./fillProcess/priority_updating.jpg", self.priority * 10000)
 
     def _update_confidence(self):
         """"
@@ -149,7 +149,7 @@ class Inpainter():
         ตำแหน่งที่มี confidence มาก คือ ตำแหน่งที่มีจุดที่ไม่ได้อยู่ใน mask มาก 
         น่าจะหมายถึงตำแหน่งที่มีจุดที่หายไปน้อยที่สุด -> มีความมั่นใจในการแทนที่ตำแหน่งนี้มากกว่าตำแหน่งที่หายไปเยอะๆ
         """
-        cv2.imwrite("./confidence.jpg", self.confidence * 255)
+        cv2.imwrite("./fillProcess/confidence.jpg", self.confidence * 255)
 
     def _update_data(self):
         normal = self._calc_normal_matrix()
@@ -160,7 +160,7 @@ class Inpainter():
             normal_gradient[:, :, 0]**2 + normal_gradient[:, :, 1]**2
         ) + 0.001  # To be sure to have a greater than 0 data
 
-        cv2.imwrite("./data_updating.jpg", self.data * 1000)
+        cv2.imwrite("./fillProcess/data_updating.jpg", self.data * 1000)
 
     def _calc_normal_matrix(self):
         """
@@ -231,7 +231,7 @@ class Inpainter():
         best_match_difference = 0
 
         lab_image = rgb2lab(self.working_image) #convert to lab image ทำไม...
-        cv2.imwrite("./lab_image.jpg", self.working_image)
+        cv2.imwrite("./fillProcess/lab_image.jpg", self.working_image)
 
         for y in range(height - patch_height + 1):
             for x in range(width - patch_width + 1):

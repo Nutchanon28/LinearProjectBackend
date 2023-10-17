@@ -7,7 +7,7 @@ directory = "test"
 
 def generateDetection(file_path, dest_dir):
     
-    print("LAPLACIAN: start detecting edge...")
+    print("LAPLACIAN: start detecting edge...\n...")
     # ต้อง run code ใน directory เดียวกับโปรแกรมไม่งั้นมันจะไม่เจอไฟล์
     # img = Image.open(r"../test/apple_85.jpg")
     img = Image.open(file_path)
@@ -23,7 +23,7 @@ def generateDetection(file_path, dest_dir):
 
     file_name = file_path.split("/")[-1]
     final.save(f"./{dest_dir}/mask_edge.jpg")
-    print("LAPLACIAN: saved edges...")
+    print("LAPLACIAN: saved edges...\n...")
 
     edges = {}
     threshold = 30
@@ -68,10 +68,10 @@ def generateDetection(file_path, dest_dir):
                 # ถ้าไม่เป็นขอบ ให้แทนทีด้วยสีดำ
 
     color_img.save(f"./{dest_dir}/mask.jpg")
-    print("LAPLACIAN: pushed mask to directory ./resources")
+    print("LAPLACIAN: pushed mask to ./upload!!")
 
 def laplacianMask():
-    generateDetection(r"./resources/image.jpg", "resources")
+    generateDetection(r"./upload/crop.jpg", "upload")
 
 # wrong_extension = ["xml", "DS_Store"]
 

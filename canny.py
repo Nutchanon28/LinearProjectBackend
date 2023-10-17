@@ -4,15 +4,15 @@ from matplotlib import pyplot as plt
 import os
 
 def cannyMask():
-    print("CANNY: start detecting edge...")
-    color_img = cv.imread("./resources/image.jpg")
-    img = cv.imread("./resources/image.jpg", cv.IMREAD_GRAYSCALE)
+    print("CANNY: start detecting edge...\n...")
+    color_img = cv.imread("./upload/crop.jpg")
+    img = cv.imread("./upload/crop.jpg", cv.IMREAD_GRAYSCALE)
     assert img is not None, "file could not be read, check with os.path.exists()"
     edges = cv.Canny(img, 100, 200)
-    print("CANNY: saved edges...")
+    print("CANNY: saved edges...\n...")
 
     # I not use edge
-    cv.imwrite("mask_edge.jpg", edges)
+    cv.imwrite("./upload/mask_edge.jpg", edges)
     # print(edges.shape)
     # print(edges)
 
@@ -42,8 +42,8 @@ def cannyMask():
             else:
                 color_img[y][x] = [0, 0, 0]
 
-    cv.imwrite("./resources/mask.jpg", color_img)
-    print("CANNY: pushed mask to directory ./resources")
+    cv.imwrite("./upload/mask.jpg", color_img)
+    print("CANNY: pushed mask to ./upload!!")
 
 # plt.subplot(121), plt.imshow(img, cmap="gray")
 # plt.title("Original Image"), plt.xticks([]), plt.yticks([])

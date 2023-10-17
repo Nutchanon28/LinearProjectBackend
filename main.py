@@ -11,6 +11,7 @@ import cv2
 from process import show_image, show_monotone_image
 from canny import cannyMask
 from edge_detection import laplacianMask
+from insert_part import repairImage
 
 import argparse
 from skimage.io import imread, imsave
@@ -33,8 +34,8 @@ class FileUpload(BaseModel):
     files: List[bytes]  # Use bytes for file data
     
 def inpainter():
-    image = imread("resources/image.jpg")
-    mask = imread("resources/mask.jpg", as_gray=True)
+    image = imread("upload/crop.jpg")
+    mask = imread("upload/mask.jpg", as_gray=True)
 
     output_image = Inpainter(
         image,
@@ -42,27 +43,50 @@ def inpainter():
         patch_size=9,
         plot_progress=True
     ).inpaint()
-    imsave("resources/imageEdit.jpg", output_image, quality=100)
+    imsave("upload/imageEdit.jpg", output_image, quality=100)
     
 
 @app.post("/")
-# async def create_upload_file(datas: dict) -> dict:
+# async def create_upload_file(mode: Annotated[str, Form()], pos: Annotated[str, Form()], image : UploadFile = File(...), crop : UploadFile = File(...)) -> dict:
 async def create_upload_file(mode: Annotated[str, Form()], image : UploadFile = File(...)) -> dict:
-    async with aiofiles.open("./resources/image.jpg", 'wb') as out_file:
-        content = await image.read()  # async read
-        await out_file.write(content)  # async write
+    async with aiofiles.open("./upload/image.jpg", 'wb') as out_file:
+        content = await image.read()
+        await out_file.write(content)
+    # async with aiofiles.open("./upload/crop.jpg", 'wb') as out_file:
+    #     content = await crop.read()
+    #     await out_file.write(content)
     if mode == "laprician":
-        laplacianMask()
-        inpainter()
-    elif mode == "canny":
+        img2 = cv2.imread("./upload/image.jpg",1)
+        print(f"crop area:{img2.shape}")
+        
+        # สร้าง crop ปลอม(ใช้ไม่ได้กับทุกรูปเพราะขนาดแต่ละรูปไม่เท่ากัน)
+        crop = img2[70 : 70 + 70, 160 : 160 + 70]
+        cv2.imwrite("./upload/crop.jpg", crop)
+        print("finish crop")
+        
         cannyMask()
         inpainter()
+        repairImage("70,160")
+        # repairImage(pos)
+    elif mode == "canny":
+        img2 = cv2.imread("./upload/image.jpg",1)
+        print(f"crop area:{img2.shape}")
+        
+        # สร้าง crop ปลอม
+        crop = img2[70 : 70 + 70, 160 : 160 + 70]
+        cv2.imwrite("./upload/crop.jpg", crop)
+        print("finish crop")
+        
+        cannyMask()
+        inpainter()
+        repairImage("70,160")
+        # repairImage(pos)
 
     return {"filename": image.filename}
 
 
 
-app.mount("/resources", StaticFiles(directory="resources"), name='images')
+app.mount("/upload", StaticFiles(directory="upload"), name='images')
  
 @app.get("/pic", response_class=HTMLResponse)
 def serve():
@@ -75,7 +99,7 @@ def serve():
             <div>
                 <h1>Here's your image</h1>
             </div>
-            <img src="resources/imageEdit.jpg">
+            <img src="upload/repaired.jpg">
         </body>
         
         <style>
