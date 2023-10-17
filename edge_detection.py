@@ -23,7 +23,7 @@ def generateDetection(file_path, dest_dir):
     final.save(f"./{dest_dir}/{file_name}_edge.png")
 
     edges = {}
-    threshold = 5
+    threshold = 30
 
     # หลังจากเอาภาพผ่าน filter dot product มันจะได้ edge ขาวดำมา (ค่าสี 0 (ดำ) - 255(ขาว)) ค่าที่เป็นขอบจะเป็นสีขาว มีค่ามาก
     # ขอบของภาพที่เป็นขอบของภาพจริงๆจะถูกนับเป็นขอบด้วย เลยต้องเอา แถว/หลักที่ 1 กับ แถว/หลักสุดท้าย ออก
@@ -52,19 +52,17 @@ def generateDetection(file_path, dest_dir):
 
     final = final.convert("RGB")
 
-    for y in range(1, final.height - 1):
-        for x in range(1, final.width - 1):
-            if y not in edges:
-                break
-
-            if x == edges[y][0] or x == edges[y][1]:
-                color_img.putpixel((x, y), (102, 0, 0))
-            elif (
+    for y in range(0, final.height):
+        for x in range(0, final.width):
+            if y in edges and (
                 x >= edges[y][0] and x <= edges[y][1]
             ):  # ถ้า x อยู่ระหว่างขอบซ้ายและขอบขวาของแถว y แสดงว่ามันอยู่ในขอบ
                 color_img.putpixel(
-                    (x, y), (0, 102, 0)
-                )  # แทนที่ด้วยสีเขียว rgb(0, 102, 0)
+                    (x, y), (255, 255, 255)
+                )  # แทนที่ด้วยสีเขียว rgb(255, 255, 255)
+            else:
+                color_img.putpixel((x, y), (0, 0, 0))
+                # ถ้าไม่เป็นขอบ ให้แทนทีด้วยสีดำ
 
     color_img.save(f"./{dest_dir}/{file_name}_object.png")
 

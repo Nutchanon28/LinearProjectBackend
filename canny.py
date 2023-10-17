@@ -31,15 +31,12 @@ for y in range(1, edges.shape[0] - 1):
 
 print(edge_pixels)
 
-for y in range(1, edges.shape[0] - 1):
-    if y not in edge_pixels:
-        continue
-
-    for x in range(1, edges.shape[1] - 1):
-        if x == edge_pixels[y][0] or x == edge_pixels[y][1]:
-            color_img[y][x] = [102, 0, 0]
-        elif x >= edge_pixels[y][0] and x <= edge_pixels[y][1]:
-            color_img[y][x] = [0, 102, 0]
+for y in range(0, edges.shape[0]):
+    for x in range(0, edges.shape[1]):
+        if y in edge_pixels and x >= edge_pixels[y][0] and x <= edge_pixels[y][1]:
+            color_img[y][x] = [255, 255, 255]
+        else:
+            color_img[y][x] = [0, 0, 0]
 
 cv.imwrite("canny_object.jpg", color_img)
 
