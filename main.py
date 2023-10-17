@@ -8,6 +8,7 @@ from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 import numpy as np
 import cv2
+from process import show_image, show_monotone_image
 
 app = FastAPI()
 
@@ -21,20 +22,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-def show_image():
-    # Set up data to send to mouse handler
-    data = {}
-    img = cv2.imread("image.png", 1)
-    print("read success!!")
-
-    cv2.imshow("Image", img)
-    cv2.waitKey(0)
-
-    # Convert array to np.array in shape n,2,2
-    points = np.uint16(data['lines'])
-
-    return "Hello from the hell"
-
 class FileUpload(BaseModel):
     files: List[bytes]  # Use bytes for file data
 
@@ -44,7 +31,12 @@ async def create_upload_file(mode: Annotated[str, Form()], image : UploadFile = 
     async with aiofiles.open("./image.png", 'wb') as out_file:
         content = await image.read()  # async read
         await out_file.write(content)  # async write
-    show_image()
+    if mode == "laprician":
+        # show_monotone_image()
+        print("received!")
+    elif mode == "canny":
+        # show_image()
+        print("received!")
 
     return {"filename": image.filename}
 
