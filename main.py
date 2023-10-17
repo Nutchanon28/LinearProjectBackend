@@ -10,6 +10,10 @@ import numpy as np
 import cv2
 from process import show_image, show_monotone_image
 
+import argparse
+from skimage.io import imread, imsave
+from inpainterModule import Inpainter
+
 app = FastAPI()
 
 origins = ["http://localhost:5173", "http://127.0.0.1:5173"]
@@ -24,15 +28,29 @@ app.add_middleware(
 
 class FileUpload(BaseModel):
     files: List[bytes]  # Use bytes for file data
+    
+def inpainter():
+
+    image = imread("resources/image.jpg")
+    mask = imread("resources/mask.jpg", as_gray=True)
+
+    output_image = Inpainter(
+        image,
+        mask,
+        patch_size=9,
+        plot_progress=True
+    ).inpaint()
+    imsave("resources/imageEdit.jpg", output_image, quality=100)
+    
 
 @app.post("/")
 # async def create_upload_file(datas: dict) -> dict:
 async def create_upload_file(mode: Annotated[str, Form()], image : UploadFile = File(...)) -> dict:
-    async with aiofiles.open("./image.png", 'wb') as out_file:
+    async with aiofiles.open("./resources/image.jpg", 'wb') as out_file:
         content = await image.read()  # async read
         await out_file.write(content)  # async write
     if mode == "laprician":
-        # show_monotone_image()
+        inpainter()
         print("received!")
     elif mode == "canny":
         # show_image()
@@ -42,18 +60,18 @@ async def create_upload_file(mode: Annotated[str, Form()], image : UploadFile = 
 
 
 
-app.mount("/sample", StaticFiles(directory="sample"), name='images')
+app.mount("/resources", StaticFiles(directory="resources"), name='images')
  
 @app.get("/pic", response_class=HTMLResponse)
 def serve():
     return """
     <html>
         <head>
-            <title></title>
+            <title>Helppppppp!</title>
         </head>
         <body>
-        <img src="sample/beach.png">
-        <h1>Hello World</h1>
+        <h1>Here's your image</h1>
+        <img src="resources/image.jpg">
         </body>
         <style>
         h1{
