@@ -8,6 +8,7 @@ directory = "test"
 def generateDetection(file_path, dest_dir):
     
     print("LAPLACIAN: start detecting edge...\n...")
+    
     # ต้อง run code ใน directory เดียวกับโปรแกรมไม่งั้นมันจะไม่เจอไฟล์
     # img = Image.open(r"../test/apple_85.jpg")
     img = Image.open(file_path)
