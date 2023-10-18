@@ -11,6 +11,7 @@ import cv2
 class Inpainter():
     def __init__(self, image, mask, patch_size=9, plot_progress=False):
         self.image = image.astype('uint8')
+        print(f"self.image shape{self.image.shape}") 
         self.mask = mask.round().astype('uint8')
         self.patch_size = patch_size
         self.plot_progress = plot_progress

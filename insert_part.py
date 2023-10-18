@@ -3,11 +3,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 
-def repairImage(pos):
-    # pos format: "xx.xxxxxx,yy.yyyyyy"
-    pos = pos.split(",")
-    posx, posy = int(round(float(pos[0]), 0)), int(round(float(pos[1]), 0))
-    print(posx, posy)
+def repairImage(posx, posy):
     img = cv2.imread("./upload/image.jpg", 1)
     img2 = img.copy()
 

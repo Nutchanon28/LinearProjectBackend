@@ -12,6 +12,9 @@ from process import show_image, show_monotone_image
 from canny import cannyMask
 from edge_detection import laplacianMask
 from insert_part import repairImage
+from prewitt import prewitt
+from robert import robert
+from sorbel import sorbel
 
 import argparse
 from skimage.io import imread, imsave
@@ -30,19 +33,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-def show_image():
-    # Set up data to send to mouse handler
-    data = {}
-    img = cv2.imread("testing.jpeg", 1)
-    print("read success!!")
-
-    cv2.imshow("Image", img)
-    cv2.waitKey(0)
-
-    # Convert array to np.array in shape n,2,2
-    # points = np.uint16(data['lines'])
-
-    return "Hello from the hell"
 class FileUpload(BaseModel):
     files: List[bytes]  # Use bytes for file data
     
@@ -60,41 +50,46 @@ def inpainter():
     
 
 @app.post("/")
-async def create_upload_file(mode: Annotated[str, Form()], pos: Annotated[str, Form()], image : UploadFile = File(...), crop : UploadFile = File(...)) -> dict:
+async def create_upload_file(mode: Annotated[str, Form()], pos: Annotated[str, Form()], size: Annotated[str, Form()], image : UploadFile = File(...)) -> dict:
     async with aiofiles.open("./upload/image.jpg", 'wb') as out_file:
         content = await image.read()
         await out_file.write(content)
-    async with aiofiles.open("./upload/crop.jpg", 'wb') as out_file:
-        content = await crop.read()
-        await out_file.write(content)
-    if mode == "laprician":
-#         img2 = cv2.imread("./upload/image.jpg",1)
-        print(f"crop area:{img2.shape}")
-        
-        # สร้าง crop ปลอม(ใช้ไม่ได้กับทุกรูปเพราะขนาดแต่ละรูปไม่เท่ากัน)
-#         crop = img2[70 : 70 + 70, 160 : 160 + 70]
-#         cv2.imwrite("./upload/crop.jpg", crop)
-#         print("finish crop")
-        
+        image_pic = cv2.imread("./upload/image.jpg",1)
+        print(f"MAIN: image shape: {image_pic.shape}")
+    size = size.split(",")
+    width, height = int(round(float(size[0]), 0)), int(round(float(size[1]), 0))
+    print(f"size {width} {height}")
+    pos = pos.split(",")
+    posx, posy = int(round(float(pos[0]), 0)), int(round(float(pos[1]), 0))
+    
+    # async with aiofiles.open("./upload/crop.jpg", 'wb') as out_file:
+    #     content = await crop.read()
+    #     await out_file.write(content)
+    #     crop_pic = cv2.imread("./upload/crop.jpg",1)
+    #     print(f"crop shape: {crop_pic.shape}")
+    # print("saved all component...\n...")
+    # print(f"crop pos: ({pos})")
+    
+    # สร้าง crop ปลอม(ใช้ไม่ได้กับทุกรูปเพราะขนาดแต่ละรูปไม่เท่ากัน)
+    img2 = cv2.imread("./upload/image.jpg")
+    crop = img2[posy : posy + height, posx : posx + width]
+    cv2.imwrite("./upload/crop.jpg", crop)
+    print(f"MAIN: crop shape: {crop.shape}")
+    print("MAIN: finish crop")
+    if mode == "canny":
         cannyMask()
-        inpainter()
-        repairImage("70,160")
-        # repairImage(pos)
-    elif mode == "canny":
-#         img2 = cv2.imread("./upload/image.jpg",1)
-        print(f"crop area:{img2.shape}")
-        
-        # สร้าง crop ปลอม
-#         crop = img2[70 : 70 + 70, 160 : 160 + 70]
-#         cv2.imwrite("./upload/crop.jpg", crop)
-#         print("finish crop")
-        
-        cannyMask()
-        inpainter()
-        repairImage("70,160")
-        # repairImage(pos)
-
-    return {"filename": crop.filename}
+    elif mode == "laplacian":
+        laplacianMask()
+    elif mode == "prewitt":
+        prewitt("./upload/crop.jpg", "./upload/mask.jpg", 10)
+    elif mode == "robert":
+        robert("./upload/crop.jpg", "./upload/mask.jpg", 20)
+    elif mode == "sorbel":
+        sorbel("./upload/crop.jpg", "./upload/mask.jpg", 30)
+    inpainter()
+    repairImage(posy, posx)
+    print("!!!finished process!!!\n...\n......returning page into front")
+    return {"filename": "success laew"}
 
 
 
