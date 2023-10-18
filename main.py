@@ -24,7 +24,7 @@ app.add_middleware(
 def show_image():
     # Set up data to send to mouse handler
     data = {}
-    img = cv2.imread("testing.png", 1)
+    img = cv2.imread("testing.jpeg", 1)
     print("read success!!")
 
     cv2.imshow("Image", img)
@@ -40,13 +40,17 @@ class FileUpload(BaseModel):
 
 @app.post("/")
 # async def create_upload_file(datas: dict) -> dict:
-async def create_upload_file(mode: Annotated[str, Form()], image : UploadFile = File(...)) -> dict:
-    async with aiofiles.open("./testing", 'wb') as out_file:
-        content = await image.read()  # async read
+async def create_upload_file(mode: Annotated[str, Form()], pos: Annotated[str, Form()], image : UploadFile = File(...), crop : UploadFile = File(...)) -> dict:
+    print(mode)
+    print(image)
+    print(crop)
+    print(pos)
+    async with aiofiles.open("./testing.jpeg", 'wb') as out_file:
+        content = await crop.read()  # async read
         await out_file.write(content)  # async write
     show_image()
 
-    return {"filename": image.filename}
+    return {"filename": crop.filename}
 
 
 
