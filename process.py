@@ -16,6 +16,21 @@ def show_image():
 
     return "Hello from the hell"
 
+def show_monotone_image():
+    # Set up data to send to mouse handler
+    data = {}
+    img = cv2.imread("image.png", 0)
+    print("read success!!")
+
+    cv2.imshow("Image", img)
+    cv2.waitKey(0)
+
+    # Convert array to np.array in shape n,2,2
+    points = np.uint16(data['lines'])
+
+    return "Hello from the hell"
+
+
 
 
 # def mouse_handler(event, x, y, flags, data, btn_down):
