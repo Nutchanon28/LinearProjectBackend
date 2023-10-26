@@ -16,7 +16,7 @@ def sorbel(file_path, save_path, threshold):
     sobelx = cv2.Sobel(img,cv2.CV_64F,1,0,ksize=5)  # x
     sobely = cv2.Sobel(img,cv2.CV_64F,0,1,ksize=5)  # y
     sobel = sobelx + sobely
-
+    cv2.imwrite("./upload/mask_edge.jpg", sobel)
     edge_detect(RGB_img, sobel, threshold, save_path)
 
 def edge_detect(color_img, edges, threshold, save_path):

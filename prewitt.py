@@ -12,7 +12,7 @@ def prewitt(file_path, save_path, threshold):
     img_prewitty = cv2.filter2D(img_gaussian, -1, kernely)
     img_prewitt = img_prewittx + img_prewitty
     # cv2.imshow("Prewitt", img_prewittx + img_prewitty)
-
+    cv2.imwrite("./upload/mask_edge.jpg", img_prewitt)
     edge_detect(img, img_prewitt, threshold, save_path)
 
 def edge_detect(color_img, edges, threshold, save_path):
@@ -43,5 +43,5 @@ def edge_detect(color_img, edges, threshold, save_path):
 
     cv2.imwrite(save_path, color_img)
 
-prewitt("./upload/crop.jpg", "./upload/mask.jpg", 10)
+prewitt("./upload/crop.jpg", "./upload/mask.jpg", 70)
 

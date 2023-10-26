@@ -51,6 +51,7 @@ def inpainter():
 
 @app.post("/")
 async def create_upload_file(mode: Annotated[str, Form()], pos: Annotated[str, Form()], size: Annotated[str, Form()], image : UploadFile = File(...)) -> dict:
+    print("received!!")
     async with aiofiles.open("./upload/image.jpg", 'wb') as out_file:
         content = await image.read()
         await out_file.write(content)
@@ -62,15 +63,7 @@ async def create_upload_file(mode: Annotated[str, Form()], pos: Annotated[str, F
     pos = pos.split(",")
     posx, posy = int(round(float(pos[0]), 0)), int(round(float(pos[1]), 0))
     
-    # async with aiofiles.open("./upload/crop.jpg", 'wb') as out_file:
-    #     content = await crop.read()
-    #     await out_file.write(content)
-    #     crop_pic = cv2.imread("./upload/crop.jpg",1)
-    #     print(f"crop shape: {crop_pic.shape}")
-    # print("saved all component...\n...")
-    # print(f"crop pos: ({pos})")
-    
-    # สร้าง crop ปลอม(ใช้ไม่ได้กับทุกรูปเพราะขนาดแต่ละรูปไม่เท่ากัน)
+    # สร้าง crop จริงจ้าาาาา
     img2 = cv2.imread("./upload/image.jpg")
     crop = img2[posy : posy + height, posx : posx + width]
     cv2.imwrite("./upload/crop.jpg", crop)
